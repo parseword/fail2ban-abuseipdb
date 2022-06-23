@@ -1,0 +1,28 @@
+# Resolves:
+# SELinux is preventing f2b/a.postfix-s from using the getpgid access on a process.
+# SELinux is preventing f2b/a.postfix-s from using the signal access on a process.
+# ...and some other policy violations.
+
+module custom-fail2ban 0.9.1;
+
+require {
+        type home_bin_t;
+        type fail2ban_t;
+        type mysqld_port_t;
+        type postfix_postdrop_t;
+        type snmpd_var_lib_t;
+        type system_mail_t;
+        class tcp_socket name_connect;
+        class dir { getattr open read write search };
+        class file { ioctl open read write execute execute_no_trans getattr };
+        class process { getpgid signal };
+}
+
+#============= fail2ban_t ==============
+allow fail2ban_t home_bin_t:file { ioctl open read write execute execute_no_trans getattr };
+allow fail2ban_t mysqld_port_t:tcp_socket name_connect;
+allow fail2ban_t postfix_postdrop_t:process signal;
+allow fail2ban_t self:process getpgid;
+allow fail2ban_t snmpd_var_lib_t:dir { getattr search open read };
+allow fail2ban_t snmpd_var_lib_t:file { open read write getattr };
+allow fail2ban_t system_mail_t:process signal;

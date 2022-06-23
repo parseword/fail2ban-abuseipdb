@@ -1,0 +1,123 @@
+# Fail2ban configuration file
+#
+# Action to report to abuseipdb.com through an intermediary PHP script running 
+# on your own server.
+#
+# You must sign up to obtain an API key from abuseipdb.com.
+#
+# You must also install the PHP script and configuration located here:
+# https://github.com/parseword/fail2ban-abuseipdb/
+#
+#      DO NOT INSTALL THIS abuseipdb.local FILE UNLESS YOU'RE CONFIGURING
+#      fail2ban TO USE THE INTERMEDIARY PHP SCRIPT!
+#
+# IMPORTANT:
+#
+# Reporting an IP of abuse is a serious complaint. Make sure that it is
+# serious. Fail2ban developers and network owners recommend you only use this
+# action for:
+#   * The recidive where the IP has been banned multiple times
+#   * Where maxretry has been set quite high, beyond the normal user typing
+#     password incorrectly.
+#   * For filters that have a low likelihood of receiving human errors
+#
+# This action relies on the appropriate categories being set for each type
+# of ban. You can specify the categories in your jail.local.
+#
+# Example, for ssh bruteforce (in section [sshd] of `jail.local`): 
+#   action = %(known/action)s
+#            %(action_abuseipdb)s[abuseipdb_category="18,22"]
+#
+# See below for categories.
+#
+# Original Ref: https://github.com/parseword/fail2ban-abuseipdb/
+# Added to fail2ban by Andrew James Collett (ajcollett)
+
+## AbuseIPDB Categories:
+# The numeric `abuseipdb_category` ID MUST be set in the jail.conf action call.
+# Multiple categories can be specified as a comma-separated list.
+# Example, for ssh bruteforce: action = %(action_abuseipdb)s[abuseipdb_category="18,22"]
+# ID    Title    Description
+# 1     DNS Compromise (changing or attempting to alter DNS records)
+# 2     DNS Poisoning (adding bogus entries to DNS cache)
+# 3     Fraud Orders
+# 4     DDoS Attack
+# 5     FTP Brute-Force
+# 6     Ping of Death
+# 7     Phishing email or website
+# 8     VOIP Fraud
+# 9     Open Proxy (HTTP, SOCKS, Tor node...)
+# 10    Web Spam  (Comment/forum/HTTP referer)
+# 11    Email Spam
+# 12    Blog Spam 
+# 13    VPN IP (in combination with other category)
+# 14    Port Scan
+# 15    Hacking
+# 16    SQL Injection
+# 18    Brute-Force
+# 19    Bad Web Bot
+# 20    Exploited Host
+# 21    Web App Attack
+# 22    SSH Secure Shell (SSH) abuse. Use this category in combination with more specific categories.
+# 23    IoT Targeted
+# See https://abuseipdb.com/categories for more descriptions
+
+[Definition]
+
+# bypass action for restored tickets
+norestored = 1
+
+# Option:  actionstart
+# Notes.:  command executed on demand at the first ban (or at the start of Fail2Ban if actionstart_on_demand is set to false).
+# Values:  CMD
+#
+actionstart =
+
+# Option:  actionstop
+# Notes.:  command executed at the stop of jail (or at the end of Fail2Ban)
+# Values:  CMD
+#
+actionstop =
+
+# Option:  actioncheck
+# Notes.:  command executed once before each actionban command
+# Values:  CMD
+#
+actioncheck =
+
+# Option:  actionban
+# Notes.:  command executed when banning an IP. Take care that the
+#          command is executed with Fail2Ban user rights.
+#
+#          ** IMPORTANT! **
+#
+#          DO NOT INSTALL THIS abuseipdb.local FILE UNLESS YOU'RE CONFIGURING
+#          fail2ban TO USE THE INTERMEDIARY PHP SCRIPT
+#
+#          By default, this posts directly to AbuseIPDB's API, unfortunately
+#          this results in a lot of backslashes/escapes appearing in the
+#          reports. This also may include info like your hostname.
+#          If you have your own web server with PHP available, you can
+#          use my (Shaun's) helper PHP script by commenting out the first #actionban
+#          line below, uncommenting the second one, and pointing the URL at
+#          wherever you install the helper script. For the PHP helper script, see
+#          <https://wiki.shaunc.com/wikka.php?wakka=ReportingToAbuseIPDBWithFail2Ban>
+#
+# Tags:    See jail.conf(5) man page
+# Values:  CMD
+#
+actionban = curl --fail --data-urlencode "comment=<matches>" --data 'ip=<ip>' --data 'category=<abuseipdb_category>' "<helper_script_url>"
+
+# Option:  actionunban
+# Notes.:  command executed when unbanning an IP. Take care that the
+#          command is executed with Fail2Ban user rights.
+# Tags:    See jail.conf(5) man page
+# Values:  CMD
+#
+actionunban =
+
+[Init]
+# Option:  helper_script_url
+# Notes:   The URL to the helper PHP script on your web server
+# Values:  STRING
+helper_script_url = "http://your.example.com/abusereport/abuseipdb-report-v2.php"

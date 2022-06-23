@@ -1,7 +1,14 @@
+# Custom SELinux policy module for fail2ban
+# Author: Shaun Cummiskey <shaun@shaunc.com> <https://shaunc.com/>
+# License: GPLv2
+#
 # Resolves:
 # SELinux is preventing f2b/a.postfix-s from using the getpgid access on a process.
 # SELinux is preventing f2b/a.postfix-s from using the signal access on a process.
 # ...and some other policy violations.
+#
+# You probably won't need most of this. I have fail2ban doing a _lot_ of extra
+# stuff in the background... :)
 
 module custom-fail2ban 0.9.1;
 

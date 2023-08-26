@@ -38,6 +38,9 @@
  *
  * The 'ip' and 'category' elements are mandatory.
  */
+
+ include ('config.php');
+
 if (empty($_POST['ip']) || empty($_POST['category'])) {
     exit;
 }
